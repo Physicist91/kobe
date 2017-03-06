@@ -2,6 +2,10 @@
 title: "Kobe Bryant Shot Selection"
 author: "Kevin Siswandi"
 date: "March 3, 2017"
+header-includes:
+  - \hypersetup{colorlinks=true,
+            allbordercolors={0 0 0},
+            pdfborderstyle={/S/U/W 1}}
 output:
   pdf_document: default
   html_document: default
@@ -13,7 +17,10 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ## Introduction
 
-This report analysed the Kaggle playground challenge [Kobe Bryant's shot selection](https://www.kaggle.com/c/kobe-bryant-shot-selection). Various models were run for this project:
+This report analysed the Kaggle playground challenge: [Kobe Bryant's shot selection](https://www.kaggle.com/c/kobe-bryant-shot-selection). The data contained the location and circumstances of every field goal attempted by Kobe Bryant during his 20-year career. The task was to predict whether the basket went in (shot_made_flag). Kaggle had removed 5000 of the shot_made_flags (represented as missing values in the csv file). These were the test set shots for which one must submit a prediction.
+
+
+Various models were run for this project:
 
 1. XGBOOST in Python
 2. XGBOOST in R
@@ -52,16 +59,6 @@ Based on insights gleaned from the exploratory analysis of the data, I decided t
 * lon (correlated with loc_x)
 * lat (correlated with loc_y)
 
-In all instances of the models (sk-learn, xgboost, and tensorflow), the following (raw) categorical variables are converted to columns of 0/1 with one-hot encoding:
-
-1. action_type
-2. combined_shot_type
-3. period
-4. shot_type
-5. shot_zone_area
-6. shot_zone_basic
-7. shot_zone_range
-9. opponent
 
 
 ## Model selection
@@ -75,9 +72,7 @@ Therefore, I had to use another strategy for this challenge: XGBOOST was the bes
 
 Using tensorflow in Python (c.f. tensorflow.ipynb), I also managed to achieve ~0.66 logloss on LB, but the training time was too expensive as it exceeded Kaggle's kernel limit with only 4 hidden layers (~50 neurons each) so I had to use GCP docker on my laptop.
 
-Due to the accuracy and efficiency of XGBOOST, I concluded that the best strategy for this competition would be to do some advanced feature engineering and feed the engineered features to XGBOOST. Using this strategy, I managed to improve my LB score from 0.606 (basic XGBOOST) to ~0.604 then ~0.603 with progressively more features added...
-
-
+Due to the accuracy and efficiency of XGBOOST, I concluded that the best strategy for this competition would be to do advanced feature engineering and feed the engineered features to XGBOOST. Using this strategy, I managed to improve my LB score from 0.606 (basic XGBOOST) to ~0.604 then ~0.603 with progressively more features added. It eventually reached 0.601 with even more features and parameter tuning.
 
 
 ## Feature Engineering
@@ -105,6 +100,17 @@ Due to the accuracy and efficiency of XGBOOST, I concluded that the best strateg
 
 * converted each unique level of categorical variables (both raw and engineered) into a column of binary (0/1).
 
+In all instances of the models (sk-learn, xgboost, and tensorflow), the following (raw) categorical variables were converted to columns of 0/1 with one-hot encoding:
+
+1. action_type
+2. combined_shot_type
+3. period
+4. shot_type
+5. shot_zone_area
+6. shot_zone_basic
+7. shot_zone_range
+9. opponent
+
 ### Shot location clusters
 
 * used Gaussian mixture models to cluster the locations of shot attempts, based on loc_x and loc_y. Following temporal_spatial_eda.ipynb, 13 clusters were specified for the clustering. However, this shot location cluster was not included in the final XGBOOST model because it did not improve the final score.
@@ -115,7 +121,7 @@ Due to the accuracy and efficiency of XGBOOST, I concluded that the best strateg
 
 ## Future work
 
-Aside from hyperparameter tuning of the xgboost model (due to time constraint I had to skip the grid search process and resort to hand-tuning), there were other potential things to try:
+This prediction could be improved in many ways given the time and computational resources. Aside from hyperparameter tuning of the xgboost model (due to time constraint I had to skip the grid search process and resort to hand-tuning), there were other potential things to try:
 
 * feature interaction using tensorflow's cross_column
 * hyperparameter tuning of tensorflow's deep NN
@@ -124,7 +130,7 @@ Aside from hyperparameter tuning of the xgboost model (due to time constraint I 
 
 ## Conclusion
 
-A single model xgboost without much feature engineering performed very well. XGBOOST is really efficient in identifying non-linear interactions between features that not much feature engineering was required to get a good score (in fact several features that I generated ended up not used because they did not improve the final score by XGBoost).
+A single model XGBoost model without much feature engineering performed very well. XGBoost was really efficient in identifying non-linear interactions between features that not much feature engineering was required to get a good score (in fact several features that I generated ended up not used because they did not improve the final score by XGBoost). Using a single XGBoost model with feature enginering and hand-tuned parameters, a final score of ~0.601 was achieved on the leaderboard, which translated to the 99th position out of 1117 teams (top 10%).
 
 
 ## References

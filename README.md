@@ -4,12 +4,14 @@ This project analysed the Kaggle playground challenge [Kobe Bryant's shot select
 
 Please find "main.pdf" for the summary report of this analysis.
 
+```
 .
 +-- _main.Rmd 
 +-- _data <- The dataset provided by Kaggle for the challenge
 +-- _code <- Jupyter notebooks and Python/R scripts 
 +-- _submission <- submission files to the competition
 +-- main.pdf <- The main PDF report produced by R Markdown
+```
 
 ## ML Models
 
