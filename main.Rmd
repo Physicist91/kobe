@@ -1,8 +1,10 @@
 ---
 title: "Kobe Bryant Shot Selection"
-author: "Kevin"
-date: "2/27/2017"
-output: pdf_document
+author: "Kevin Siswandi"
+date: "March 3, 2017"
+output:
+  pdf_document: default
+  html_document: default
 ---
 
 ```{r setup, include=FALSE}
@@ -18,13 +20,18 @@ This report analysed the Kaggle playground challenge [Kobe Bryant's shot selecti
 2. TensorFLOW DNN in Python
 3. sklearn (random forest, logistic regression, linear discriminant analysis, K-NN, decision tree, naive bayes, extra tree, adaboost, and gbm) in Python
 
-The final result was 0.60126 on LB (99th position).
+This analysis resulted in a score of 0.60126 LB (99th out of 1117 teams on the leaderboard). The script that produced the final score had been hosted on Kaggle kernel: https://www.kaggle.com/kevins/kobe-bryant-shot-selection/fork-of-notebook55e4f6ba6a
+
+![Final submission score](D:/kobe-master/LB_3.PNG)
+
+
+![This score would have taken over the 99th position on the leaderboard](D:/kobe-master/LB_4.PNG)
 
 ## Main scripts
 
-The script that was used to generate the final score was xgboost_final.ipynb.
+The script that was used to generate the final score had been hosted on Kaggle kernel: https://www.kaggle.com/kevins/kobe-bryant-shot-selection/fork-of-notebook55e4f6ba6a
 
-Other scripts:
+Other scripts in `code` directory:
 
 * xgboost.R (ran locally) -- basic xgboost in R.
 * show-me-your-best-model.ipynb (ran on Kaggle kernel) -- a forked [public notebook](https://www.kaggle.com/khozzy/kobe-bryant-shot-selection/kobe-shots-show-me-your-best-model) containing exploratory data analysis, feature selection, and various sklearn models.
@@ -64,40 +71,47 @@ that explored multiple models in scikit-learn including Logistic Regression, Lin
 
 At first, I thought it was the feature selection process that introduced the overfitting (as it involved selecting top 20 features according to Random Forest Classifier and Recursive Feature Elimination using Logistic Regression Classifier), but it became evident that this overfitting had to do with the [data leakage](https://www.kaggle.com/c/kobe-bryant-shot-selection/discussion/21606) after I reproduced [a similar score](https://www.kaggle.com/kevins/kobe-bryant-shot-selection/models-war/) even after removing the automated feature selection process.
 
-Therefore, I had to use another strategy for this challenge: XGBOOST was the best next thing to do. Using [this starter script: XGBOOST in R](https://www.kaggle.com/brandao/kobe-bryant-shot-selection/xgboost-in-r-kobe-bryant-benchmark)as a starting template, I modified the feature selection and used one-hot-encoding to handle the categorical variables (c.f. xgboost.R) and managed to get ~0.607 logloss (local CV and LB). Furthermore, doing my own feature selection and using one-hot encoding for the categorical variables (the starter script simply converted the categorical variables to ordered integers) gave me 0.606 on LB!
+Therefore, I had to use another strategy for this challenge: XGBOOST was the best next thing to do. Using [this starter script: XGBOOST in R](https://www.kaggle.com/brandao/kobe-bryant-shot-selection/xgboost-in-r-kobe-bryant-benchmark) as a starting template, I modified the feature selection and used one-hot-encoding to handle the categorical variables (c.f. xgboost.R) and managed to get ~0.607 logloss (local CV and LB). Furthermore, doing my own feature selection and using one-hot encoding for the categorical variables (the starter script simply converted the categorical variables to ordered integers) gave me 0.606 on LB!
 
 Using tensorflow in Python (c.f. tensorflow.ipynb), I also managed to achieve ~0.66 logloss on LB, but the training time was too expensive as it exceeded Kaggle's kernel limit with only 4 hidden layers (~50 neurons each) so I had to use GCP docker on my laptop.
 
 Due to the accuracy and efficiency of XGBOOST, I concluded that the best strategy for this competition would be to do some advanced feature engineering and feed the engineered features to XGBOOST. Using this strategy, I managed to improve my LB score from 0.606 (basic XGBOOST) to ~0.604 then ~0.603 with progressively more features added...
 
-![Leaderboard score comparison between XGBOOST in Python, Random Forest (sklearn) and TensorFlow)](/Users/kevins/kobe/LB_2.png)
+
 
 
 ## Feature Engineering
 
 ### Time remaining
 
-I combined seconds_remaining and minutes_remaining into a single variable time_remaining. Furthermore, I created a flag of whether it's last 5 seconds of the period (it has been shown that Kobe's last-minute shots tend to be more desperate). Two additional variables (seconds_from_period_start and seconds_from_game_start) were also created from combination of the variable time_remaining and the variable period.
+* combined seconds_remaining and minutes_remaining into a single variable time_remaining
+* created a flag indicating whether it's last 5 seconds of the period (it has been shown that Kobe's last-minute shots tend to be more desperate)
+* created two additional variables, seconds_from_period_start and seconds_from_game_start, from combination of the variable time_remaining and the variable period.
 
 ### Home game vs Away game
-I also created a flag of whether it's home game for LA Lakers, using the information from matchup (it's home game if it is written like "LA vs X", away if it's like "LA @ X").
+
+* created a flag of whether it's home game for LA Lakers. This was done using the information from matchup: it's home game if it was written like "LA vs X", away if it was like "LA @ X".
 
 ### Extraction of temporal features
 
-I extracted the year and month of game date because this may provide some seasonal information on Kobe's performance. In addition, the day of the week and the day of the year may also be of some importance. As day of week and time of year are cyclical, I converted them to radian and take the sine/cosine values (c.f. last_shot_feature.ipynb -- not included in the final xgboost model because this radial transformation did not improve xgboost's performance).
+* extracted the year and month of game date because this may provide some seasonal information on Kobe's performance.
+* extracted the day of the week and the day of the year. Note: As day of week and time of year are cyclical, I experimented by converting them to radian and take the sine/cosine values (c.f. last_shot_feature.ipynb); but these were not included in the final xgboost model because this radial transformation did not improve xgboost's performance).
 
 ### Level reduction of categorical variables
-The 20 least-common action types were replaced with 'Other'.
+
+* replaced the 20 least-common action types with 'Other'.
 
 ### One-hot encoding
-Each unique level of categorical variables was converted into a column of binary (0/1).
+
+* converted each unique level of categorical variables (both raw and engineered) into a column of binary (0/1).
 
 ### Shot location clusters
 
-Another exploration was to use Gaussian mixture models to cluster the locations of shot attempts. Following temporal_spatial_eda.ipynb, I specified 13 clusters based on loc_x and loc_y. However, this shot location cluster was not included in the final XGBOOST model because it did not improve the final score.
+* used Gaussian mixture models to cluster the locations of shot attempts, based on loc_x and loc_y. Following temporal_spatial_eda.ipynb, 13 clusters were specified for the clustering. However, this shot location cluster was not included in the final XGBOOST model because it did not improve the final score.
 
 ### Last shot status
-A flag on whether the last shot that Kobe attempted was made or missed (cf last_shot_feature.ipynb). This feature did not improved the final score of xgboost.
+
+* created a flag on whether the last shot that Kobe attempted was made or missed (cf last_shot_feature.ipynb). This feature did not improved the final score of xgboost.
 
 ## Future work
 
