@@ -59,7 +59,7 @@ Based on insights gleaned from the exploratory analysis of the data, I decided t
 * lon (correlated with loc_x)
 * lat (correlated with loc_y)
 
-
+Feature selection based on Variance Threshold, Random Forest Variable Importance, Recursive Feature Elimination and Principal Component Analysis had also been explored but there was no evidence that they improved XGBoost's final score; hence they were not included in the final model.
 
 ## Model selection
 
@@ -130,7 +130,7 @@ This prediction could be improved in many ways given the time and computational 
 
 ## Conclusion
 
-A single model XGBoost model without much feature engineering performed very well. XGBoost was really efficient in identifying non-linear interactions between features that not much feature engineering was required to get a good score (in fact several features that I generated ended up not used because they did not improve the final score by XGBoost). Using a single XGBoost model with feature enginering and hand-tuned parameters, a final score of ~0.601 was achieved on the leaderboard, which translated to the 99th position out of 1117 teams (top 10%).
+A single XGBoost model without much feature engineering performed very well. XGBoost was really efficient in identifying non-linear interactions between features that not much feature engineering was required to get a good score (in fact several features that I generated ended up not used because they did not improve the final score by XGBoost). Using a single XGBoost model with feature enginering and hand-tuned parameters, a final score of ~0.601 was achieved on the leaderboard, which translated to the 99th position out of 1117 teams (top 10%).
 
 
 ## References
