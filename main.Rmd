@@ -121,11 +121,13 @@ In all instances of the models (sk-learn, xgboost, and tensorflow), the followin
 
 ## Future work
 
-This prediction could be improved in many ways given the time and computational resources. Aside from hyperparameter tuning of the xgboost model (due to time constraint I had to skip the grid search process and resort to hand-tuning), there were other potential things to try:
+This prediction could still be improved in many ways. Aside from hyperparameter tuning of the xgboost model (due to time constraint I had to skip the grid search process and resort to hand-tuning), there were other potential things to try:
 
-* feature interaction using tensorflow's cross_column
-* hyperparameter tuning of tensorflow's deep NN
-* ensemble of xgboost and DNNclassifier
+* XGBLinear
+* improve tensorflow's results by creating cross-column to capture feature interactions
+* hyperparameter tuning of tensorflow's DeepNN Classifier
+* Keras
+* model stacking/ensemble
 * exploring the data leak
 
 ## Conclusion
